@@ -1,0 +1,3 @@
+[submodule "vendor/rpicam-apps"]
+	path = vendor/rpicam-apps
+	url = git@github.com:raspberrypi/rpicam-apps.git
