@@ -1,0 +1,45 @@
+{
+    "__COMMENT__": "Place in /454/hardware_configuration_microscope.json",
+    "schema_version": 3,
+    "leds": {
+        "red": {
+            "gpio_pins": [16]
+        },
+        "orange": {
+            "gpio_pins": [17]
+        },
+        "green": {
+            "gpio_pins": [20]
+        },
+        "blue": {
+            "gpio_pins": [21]
+        },
+        "uv": {
+            "gpio_pins": [18, 19, 22, 23]
+        }
+    },
+    "filters": {
+        "no_filter": {
+            "servo_angle": 500
+        },
+        "red": {
+            "servo_angle": 750
+        },
+        "orange": {
+            "servo_angle": 1000
+        },
+        "green": {
+            "servo_angle": 1250
+        },
+        "blue": {
+            "servo_angle": 1500
+        }
+    },
+    "heater_gpio_pins": [13],
+    "temperature_sensor_w1_glob": "/sys/bus/w1/devices/28-*/temperature",
+    "control_pid_override": {
+        "p": 800,
+        "i": 0.2,
+        "bias": 100
+    }
+}

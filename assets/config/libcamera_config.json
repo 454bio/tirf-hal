@@ -1,0 +1,11 @@
+{
+    "__COMMENT__": "Place in /454/libcamera_config.json",
+    "libcamera_config": {
+        "schema_version": 0,
+        "libcamera_ini_path": "/454/libcamera_parameters.ini",
+        "sensor_type": "imx477_debayered",
+        "preview_port": 45401,
+        "trigger_pin": 11,
+        "rolling_shutter_wait_ms": 85
+    }
+}

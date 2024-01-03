@@ -1,0 +1,9 @@
+{
+    "__COMMENT__": "Place in /454/pylablib_config.json",
+    "pylablib_config": {
+        "schema_version": 1,
+        "trigger_pin": 10,
+        "shutter_pin": 11,
+        "rolling_shutter_wait_ms": 0
+    }
+}

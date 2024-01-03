@@ -1,0 +1,19 @@
+# Place in /etc/systemd/system/454-hal.service
+# Then run `sudo systemctl daemon-reload`.
+
+[Unit]
+Description=454 HAL
+After=multi-user.target
+
+[Service]
+# libcamera-based camera
+Environment=LIBCAMERA_RPI_CONFIG_FILE=/454/libcamera_rpi_config_file.yml
+ExecStart=nice -n -20 /454/hal/apps/capture-service /454/hardware_configuration_transformer.json /454/libcamera_config.json
+# pylablib-based camera
+# ExecStart=nice -n -20 /454/hal/apps/capture-service /454/hardware_configuration_microscope.json /454/pylablib_config.json
+Type=simple
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

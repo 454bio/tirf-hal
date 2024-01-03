@@ -1,0 +1,58 @@
+{
+    "schema_version": 0,
+    "label": "Start of incorporation image",
+    "images": [
+        {
+            "label": "000"
+        },
+        {
+            "label": "645",
+            "flashes": [
+                {
+                    "led": "red",
+                    "duration_ms": 50
+                }
+            ],
+            "filter": "red"
+        },
+        {
+            "label": "590",
+            "flashes": [
+                {
+                    "led": "orange",
+                    "duration_ms": 50
+                }
+            ],
+            "filter": "orange"
+        },
+        {
+            "label": "525",
+            "flashes": [
+                {
+                    "led": "green",
+                    "duration_ms": 150
+                }
+            ],
+            "filter": "green"
+        },
+        {
+            "label": "445",
+            "flashes": [
+                {
+                    "led": "blue",
+                    "duration_ms": 150
+                }
+            ],
+            "filter": "blue"
+        },
+        {
+            "label": "365",
+            "flashes": [
+                {
+                    "led": "uv",
+                    "duration_ms": 150
+                }
+            ]
+        }
+    ]
+}

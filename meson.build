@@ -1,6 +1,7 @@
 project(
     '454-hal', 'c', 'cpp',
-    version: '6.5.6',
+    meson_version : '>= 0.64.0',
+    version: '7',
     default_options: [
         'werror=true',
         'warning_level=3',
@@ -34,12 +35,31 @@ endif
 
 c_arguments = ['-Wno-implicit-fallthrough', '-Wno-unused-parameter']
 
+boost_dep = dependency('boost', modules : ['program_options', 'thread'], required : true)
+thread_dep = dependency('threads', required : true)
+
+hal_454_src = []
+hal_454_dep = [boost_dep, thread_dep]
+
+subdir('camera')
+subdir('gui')
+subdir('hal')
+subdir('protocol')
+
 add_project_arguments(cpp_arguments, language : 'cpp')
 add_project_arguments(c_arguments, language : 'c')
 
 subdir('vendor')
 
-exe = executable('454_hal', '454_hal.c',
-    install: true)
+hal_454 = library(
+    'hal_454',
+    hal_454_src,
+    soversion: meson.project_version(),
+    include_directories: include_directories('.'),
+    install: true,
+    name_prefix: '',
+    dependencies: hal_454_dep,
+    link_with: vcmipilib
+)
 
-test('basic', exe)
+subdir('apps')
