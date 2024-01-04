@@ -18,6 +18,4 @@ protected:
 
 private:
     LibcameraApp camera_;
-
-    bool output_color_;
 };

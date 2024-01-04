@@ -60,6 +60,8 @@ protected:
     // The ImageData from the last call must be destroyed prior to the next call to block_and_receive_image.
     virtual ImageData block_and_receive_image() = 0;
 
+    bool output_color_;
+
 private:
     constexpr static int SCHEMA_VERSION = 0;
 
@@ -86,7 +88,6 @@ private:
 
     duration_type rolling_shutter_wait_;
     unsigned int trigger_pin_;
-    bool output_color_;
 
     std::optional<ImagePreviewServer> preview_server_;
     unsigned int preview_downsampling_;
