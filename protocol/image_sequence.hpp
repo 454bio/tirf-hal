@@ -42,6 +42,8 @@ public:
     void run(GpioHal *hal, ICamera *camera, const std::optional<size_t> &exposure_time_ms_override, const std::optional<std::string> &output_dir, std::function<bool()> &interrupt_requested, const boost::asio::ip::address &peer_address) const;
 
 private:
+    void run_one(size_t image_index, GpioHal *hal, ICamera *camera, const std::optional<std::string> &output_dir, const boost::asio::ip::address &peer_address) const;
+
     constexpr static int SCHEMA_VERSION = 0;
 
     std::string label_;
