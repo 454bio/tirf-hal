@@ -24,7 +24,13 @@ void VisionComponentsCamera::connect_camera(const boost::property_tree::ptree &c
 {
     CHECK_RC(sensor_open(camera_device_path_.data(), &sensor_, VC_BUFFER_COUNT), "Could not read sensor config");
 
-    set_parameters(camera_config.get_child("parameters"));
+    // TODO: Use this instead once implemented
+    // set_parameters(camera_config.get_child("parameters"));
+    int gain = camera_config.get<int>("parameters.gain");
+    int shutter = camera_config.get<int>("parameters.exposure_time_us");
+    sensor_set_shutter_gain(&sensor_, gain, shutter);
+    std::cerr << "Full parameters not yet implemented\n";
+    std::cerr << "Only setting gain=" << gain << " and shutter=" << shutter << std::endl;
 
     for (unsigned int buffer_index = 0; buffer_index < sensor_.qbufCount; ++buffer_index)
     {
