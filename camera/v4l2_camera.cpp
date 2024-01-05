@@ -162,6 +162,7 @@ void ImagePreviewServer::send_image(std::istream &image_stream)
 }
 
 V4l2Camera::V4l2Camera(const boost::property_tree::ptree &camera_config)
+    : output_color_(false)
 {
     assert(camera_config.get<int>("schema_version") == SCHEMA_VERSION);
     trigger_pin_ = camera_config.get<unsigned int>("trigger_pin");
