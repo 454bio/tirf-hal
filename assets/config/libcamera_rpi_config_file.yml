@@ -34,6 +34,6 @@
         "disable_startup_frame_drops": true,
 
         # Effectively "disable" the timeout since we have contol of XVS.
-        "camera_timeout_value_ms": -1
+        "camera_timeout_value_ms": 4294967295
     }
 }
