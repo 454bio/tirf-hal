@@ -277,25 +277,32 @@ bool V4l2Camera::can_override_exposure() const
 
 void V4l2Camera::capture_image(ShutterCallback shutter_callback, const boost::asio::ip::address &peer_address, const std::optional<std::string> &path)
 {
-    std::chrono::steady_clock::time_point flash_time;
+    std::chrono::steady_clock::time_point flash_end_time;
     {
         CameraTrigger trigger(trigger_pin_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
 
         // Actually call the callback.
         // The callback must not return until all of the flashes are complete.
-        flash_time = std::chrono::steady_clock::now();
         if (shutter_callback)
         {
             auto rolling_shutter_complete = std::chrono::steady_clock::now() + rolling_shutter_wait_;
-            LOG(1, "Starting flashes at " << flash_time.time_since_epoch().count());
+            LOG(1, "Starting flashes at " << std::chrono::steady_clock::now().time_since_epoch().count());
             shutter_callback(rolling_shutter_complete);
         }
+
+        // "SensorTimestamp is sampled when the frame start packet is picked up by the Unicam CSI-2 peripheral."
+        // https://forums.raspberrypi.com/viewtopic.php?t=355707#p2131765
+        // https://github.com/raspberrypi/linux/blob/9b79cb06ad370cfd5fc52f7d85d82bdcff701828/drivers/media/platform/bcm2835/bcm2835-unicam.c#L984
+        // The camera doesn't send anything to the Pi until the exposure is finished.
+        // This makes `trigger`'s second `pulse()`, called shortly after this scope exit, a reasonable estimate for the expected timestamp.
+        flash_end_time = std::chrono::steady_clock::now();
+        LOG(1, "Shutter closing at " << flash_end_time.time_since_epoch().count());
     }
 
     // Finally, save the corresponding image.
-    auto save_impl = [this, flash_time, path]()
+    auto save_impl = [this, flash_end_time, path]()
     {
-        auto give_up_time = flash_time + MAX_WAIT;
+        auto give_up_time = flash_end_time + MAX_WAIT;
         do
         {
             // Try to find it...
@@ -304,13 +311,13 @@ void V4l2Camera::capture_image(ShutterCallback shutter_callback, const boost::as
 
                 // ... skipping if there's no way that we have it...
                 const auto& first_timestamp = capture_times_.cbegin()->first;
-                if (flash_time + capture_period_ < first_timestamp)
+                if (flash_end_time + capture_period_ < first_timestamp)
                 {
                     LOG(1, "Requested a save of an image that is too old -- first is " << first_timestamp.time_since_epoch().count());
-                    return;
+                    throw std::runtime_error("Requested a save of an image that is too old");
                 }
 
-                decltype(capture_times_)::const_iterator capture_it = capture_times_.upper_bound(flash_time);
+                decltype(capture_times_)::const_iterator capture_it = capture_times_.upper_bound(flash_end_time);
                 if (capture_it != capture_times_.cend())
                 {
                     // ... and write it to both the preview and to disk.

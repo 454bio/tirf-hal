@@ -109,6 +109,19 @@ void VisionComponentsCamera::set_parameters(const boost::property_tree::ptree &p
     // * Options::Init and LibcameraApp::StartCamera in libcamera-apps
     // * sensor_set_shutter_gain in the Vision Components example code
 
+    // We care about these:
+    // "brightness": 0.0,
+    // "contrast": 0.0,
+    // "saturation": 1.0,
+    // "sharpness": 1.0,
+    // "awb": "custom",
+    // "awbgains": "0,0",
+    // "exposure": "normal",
+    // "exposure_time_us": 250000,
+    // "ev": 0,
+    // "denoise": "off",
+    // "gain": 8.0
+
     if (parameters.empty())
     {
         return;
