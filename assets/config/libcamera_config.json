@@ -6,6 +6,7 @@
         "sensor_type": "imx477_debayered",
         "preview_port": 45401,
         "trigger_pin": 11,
-        "rolling_shutter_wait_ms": 85
+        "rolling_shutter_wait_ms": 85,
+        "watchdog_period_s": 0
     }
 }
