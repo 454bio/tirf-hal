@@ -19,7 +19,7 @@
 
 using boost::asio::ip::tcp;
 
-const static std::string VERSION = "7.1.3";
+const static std::string VERSION = "7.1.4";
 const static unsigned short API_PORT = 45400;
 const static unsigned short ADJUSTMENTS_API_PORT = 45404;
 

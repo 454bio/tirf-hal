@@ -88,6 +88,7 @@ private:
 
     duration_type rolling_shutter_wait_;
     unsigned int trigger_pin_;
+    bool trigger_active_high_;
 
     std::optional<ImagePreviewServer> preview_server_;
     unsigned int preview_downsampling_;

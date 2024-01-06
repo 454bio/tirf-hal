@@ -26,17 +26,21 @@ constexpr static auto DEFAULT_WATCHDOG_PERIOD = std::chrono::duration<size_t>(30
 
 // How long to hold XVS down for when pulsing it.
 constexpr static uint32_t TRIGGER_PULSE_DURATION_US = 125;
+constexpr static bool DEFAULT_TRIGGER_ACTIVE_HIGH = false;
 
 constexpr static size_t DEFAULT_IMAGE_BUFFER_SIZE = 24;
 constexpr static auto CAMERA_INITIALIZATION_WAIT = std::chrono::duration<unsigned int>(3);
 
 constexpr static unsigned int DEFAULT_PREVIEW_DOWNSAMPLING = 1;
 
+// TODO: VC camera uses the trigger to start but then stops at the preset exposure time
+// Need to change trigger behavior by camera to accommodate this
 class CameraTrigger
 {
 public:
     CameraTrigger(
         unsigned int gpio_pin,
+        bool active_high,
         const V4l2Camera::duration_type &rolling_shutter_duration,
         const V4l2Camera::duration_type &capture_period);
     ~CameraTrigger();
@@ -45,6 +49,7 @@ private:
     void pulse();
 
     unsigned int gpio_pin_;
+    bool active_high_;
     V4l2Camera::duration_type rolling_shutter_duration_;
     V4l2Camera::duration_type capture_period_;
     std::chrono::steady_clock::time_point earliest_stop_time_;
@@ -56,10 +61,12 @@ private:
 
 CameraTrigger::CameraTrigger(
     unsigned int gpio_pin,
+    bool active_high,
     const V4l2Camera::duration_type &rolling_shutter_duration,
     const V4l2Camera::duration_type &capture_period
 )
     : gpio_pin_(gpio_pin)
+    , active_high_(active_high)
     , rolling_shutter_duration_(rolling_shutter_duration)
     , capture_period_(capture_period)
 {
@@ -87,9 +94,9 @@ CameraTrigger::~CameraTrigger()
 
 void CameraTrigger::pulse()
 {
-    CHECK_RC(gpioWrite(gpio_pin_, false), "Could not pulse camera trigger");
+    CHECK_RC(gpioWrite(gpio_pin_, false ^ active_high_), "Could not pulse camera trigger");
     gpioDelay(TRIGGER_PULSE_DURATION_US);
-    CHECK_RC(gpioWrite(gpio_pin_, true), "Could not pulse camera trigger");
+    CHECK_RC(gpioWrite(gpio_pin_, true ^ active_high_), "Could not pulse camera trigger");
 }
 
 ImagePreviewServer::ImagePreviewServer(unsigned short port)
@@ -180,12 +187,15 @@ V4l2Camera::V4l2Camera(const boost::property_tree::ptree &camera_config)
     auto watchdog_period_from_config = camera_config.get_optional<unsigned int>("watchdog_period_s");
     watchdog_period_ = watchdog_period_from_config.is_initialized() ? std::chrono::duration<size_t>(*watchdog_period_from_config) : DEFAULT_WATCHDOG_PERIOD;
 
+    auto trigger_active_high_from_config = camera_config.get_optional<bool>("trigger_is_active_high");
+    trigger_active_high_ = trigger_active_high_from_config.is_initialized() ? *trigger_active_high_from_config : DEFAULT_TRIGGER_ACTIVE_HIGH;
+
     // Set up trigger pin using pigpio.
     // Assumes that GPIO was already initialized using `gpioInitialise()`.
     CHECK_RC(gpioSetMode(trigger_pin_, PI_OUTPUT), "Could not set up camera shutter");
 
     // Assume GPIO is active low.
-    CHECK_RC(gpioWrite(trigger_pin_, true), "Could not reset camera trigger");
+    CHECK_RC(gpioWrite(trigger_pin_, true ^ trigger_active_high_), "Could not reset camera trigger");
 
     // Set up the preview server.
     if (preview_port.is_initialized())
@@ -219,7 +229,7 @@ void V4l2Camera::initialize(const boost::property_tree::ptree &camera_config)
     std::this_thread::sleep_for(CAMERA_INITIALIZATION_WAIT);
     for (size_t i = 0; i < image_buffer_size; ++i)
     {
-        CameraTrigger trigger(trigger_pin_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
+        CameraTrigger trigger(trigger_pin_, trigger_active_high_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
     }
     std::this_thread::sleep_for(CAMERA_INITIALIZATION_WAIT);
     size_t empty_buffer_count;
@@ -266,7 +276,7 @@ void V4l2Camera::watchdog_thread_loop()
     while (true)
     {
         std::this_thread::sleep_for(watchdog_period_);
-        CameraTrigger trigger(trigger_pin_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
+        CameraTrigger trigger(trigger_pin_, trigger_active_high_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
     }
 }
 
@@ -280,7 +290,7 @@ void V4l2Camera::capture_image(ShutterCallback shutter_callback, const boost::as
 {
     std::chrono::steady_clock::time_point flash_end_time;
     {
-        CameraTrigger trigger(trigger_pin_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
+        CameraTrigger trigger(trigger_pin_, trigger_active_high_, rolling_shutter_wait_, std::chrono::duration_cast<V4l2Camera::duration_type>(capture_period_));
 
         // Actually call the callback.
         // The callback must not return until all of the flashes are complete.
