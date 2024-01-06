@@ -9,16 +9,7 @@
         "rolling_shutter_wait_ms": 85,
         "watchdog_period_s": 0,
         "parameters": {
-            "brightness": 0.0,
-            "contrast": 0.0,
-            "saturation": 1.0,
-            "sharpness": 1.0,
-            "awb": "custom",
-            "awbgains": "0,0",
-            "exposure": "normal",
             "exposure_time_us": 10000,
-            "ev": 0,
-            "denoise": "off",
             "gain": 8.0
         }
     }
