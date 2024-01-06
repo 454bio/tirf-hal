@@ -7,6 +7,7 @@
         "preview_downsampling": 2,
         "trigger_pin": 6,
         "rolling_shutter_wait_ms": 85,
+        "watchdog_period_s": 0,
         "parameters": {
             "brightness": 0.0,
             "contrast": 0.0,
